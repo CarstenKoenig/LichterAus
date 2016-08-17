@@ -27,9 +27,13 @@ main =
         }
 
 
+generiereNeuesSpiel =
+    Rnd.generate ResetSpielfeld (M.randomSpielfeld 9 9 30)
+
+
 initialModel =
     ( Model (M.leeresSpielfeld 9 9) False []
-    , Rnd.generate ResetSpielfeld (M.randomSpielfeld 9 9 30)
+    , generiereNeuesSpiel
     )
 
 
@@ -44,7 +48,10 @@ view model =
                 )
             ]
         , viewRows model (M.rows model.spielfeld)
-        , Html.button [ Events.onClick SucheLoesung ] [ Html.text "Löse" ]
+        , Html.div []
+            [ Html.button [ Events.onClick SucheLoesung ] [ Html.text "Löse" ]
+            , Html.button [ Events.onClick NeuesSpiel ] [ Html.text "neu" ]
+            ]
         ]
 
 
@@ -96,6 +103,7 @@ zelleColor model zelle =
 type Msg
     = Push M.Zelle
     | ResetSpielfeld M.Spielfeld
+    | NeuesSpiel
     | SucheLoesung
     | NoOp
 
@@ -104,6 +112,9 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmds.none )
+
+        NeuesSpiel ->
+            ( model, generiereNeuesSpiel )
 
         SucheLoesung ->
             ( { model
