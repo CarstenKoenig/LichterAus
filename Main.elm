@@ -1,11 +1,14 @@
 module Main exposing (..)
 
 import Html exposing (Html, Attribute)
-import Html.App exposing (beginnerProgram)
+import Html.App exposing (program)
 import Html.Events as Events
 import Html.Attributes as Attr
 import Model as M
 import Vektor exposing (..)
+import Random as Rnd
+import Platform.Sub as Subs
+import Platform.Cmd as Cmds
 
 
 type alias Model =
@@ -13,11 +16,16 @@ type alias Model =
 
 
 main =
-    beginnerProgram
-        { model = Model (M.leeresSpielfeld 2 2)
-        , view = view
+    program
+        { init = initialModel
         , update = update
+        , subscriptions = \_ -> Subs.none
+        , view = view
         }
+
+
+initialModel =
+    ( Model (M.leeresSpielfeld 8 5), Rnd.generate ResetSpielfeld (M.randomSpielfeld 8 5 10) )
 
 
 view model =
@@ -43,12 +51,7 @@ viewZelle zelle =
         [ zelleStyle zelle
         , Events.onClick (XorButton zelle.vektor)
         ]
-        [ Html.text <|
-            if zelle.licht then
-                "X"
-            else
-                "O"
-        ]
+        []
 
 
 zelleStyle : M.Zelle -> Attribute Msg
@@ -67,9 +70,17 @@ zelleStyle zelle =
 
 type Msg
     = XorButton (Vektor Bool)
+    | ResetSpielfeld M.Spielfeld
 
 
 update msg model =
     case msg of
+        ResetSpielfeld sf ->
+            ( { model | spielfeld = sf }
+            , Cmds.none
+            )
+
         XorButton v ->
-            { model | spielfeld = M.xorSpielfeld model.spielfeld v }
+            ( { model | spielfeld = M.xorSpielfeld model.spielfeld v }
+            , Cmds.none
+            )

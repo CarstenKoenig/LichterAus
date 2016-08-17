@@ -1,6 +1,9 @@
 module Model exposing (..)
 
+import Array
 import List
+import Random as Rnd exposing (Generator)
+import Random.Array as RndArr
 import Vektor exposing (..)
 
 
@@ -15,8 +18,32 @@ leeresSpielfeld : Int -> Int -> Spielfeld
 leeresSpielfeld x y =
     { dimX = x
     , dimY = y
-    , lichter = List.repeat (x * y) False
+    , lichter = List.repeat (x * y) True
     }
+
+
+randomSpielfeld : Int -> Int -> Int -> Generator Spielfeld
+randomSpielfeld x y anzahl =
+    let
+        leer =
+            leeresSpielfeld x y
+    in
+        randomZellen leer anzahl
+            |> Rnd.map
+                (List.foldl
+                    (\z sp -> xorSpielfeld sp z.vektor)
+                    leer
+                )
+
+
+randomZellen : Spielfeld -> Int -> Generator (List Zelle)
+randomZellen spielfeld anzahl =
+    let
+        zellen =
+            zellenSpan spielfeld
+    in
+        RndArr.shuffle (Array.fromList zellen)
+            |> Rnd.map (\a -> Array.toList a |> List.take anzahl)
 
 
 xorSpielfeld : Spielfeld -> Vektor Bool -> Spielfeld
