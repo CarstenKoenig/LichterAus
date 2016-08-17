@@ -5,6 +5,7 @@ import Html.App exposing (beginnerProgram)
 import Html.Events as Events
 import Html.Attributes as Attr
 import Model as M
+import Vektor exposing (..)
 
 
 type alias Model =
@@ -13,7 +14,7 @@ type alias Model =
 
 main =
     beginnerProgram
-        { model = Model (M.leeresSpielfeld 8 5)
+        { model = Model (M.leeresSpielfeld 2 2)
         , view = view
         , update = update
         }
@@ -65,7 +66,7 @@ zelleStyle zelle =
 
 
 type Msg
-    = XorButton (M.Vektor Bool)
+    = XorButton (Vektor Bool)
 
 
 update msg model =

@@ -1,15 +1,7 @@
 module Model exposing (..)
 
 import List
-
-
-type alias Vektor a =
-    List a
-
-
-xorVektor : Vektor Bool -> Vektor Bool -> Vektor Bool
-xorVektor xs ys =
-    List.map2 xor xs ys
+import Vektor exposing (..)
 
 
 type alias Spielfeld =
@@ -65,6 +57,18 @@ rows spielfeld =
                         zellen :: genRows (y + 1) rest
     in
         genRows 0 spielfeld.lichter
+
+
+zellenSpan : Spielfeld -> List Zelle
+zellenSpan spielfeld =
+    let
+        elems =
+            List.concat (rows spielfeld)
+
+        proj =
+            .vektor
+    in
+        span proj elems
 
 
 type alias Koordinate =
