@@ -14,6 +14,7 @@ import Platform.Cmd as Cmds
 type alias Model =
     { spielfeld : M.Spielfeld
     , gewonnen : Bool
+    , loesung : List M.Koordinate
     }
 
 
@@ -27,7 +28,9 @@ main =
 
 
 initialModel =
-    ( Model (M.leeresSpielfeld 8 5) False, Rnd.generate ResetSpielfeld (M.randomSpielfeld 8 5 10) )
+    ( Model (M.leeresSpielfeld 8 5) False []
+    , Rnd.generate ResetSpielfeld (M.randomSpielfeld 8 5 10)
+    )
 
 
 view model =
@@ -41,6 +44,7 @@ view model =
                 )
             ]
         , viewRows model (M.rows model.spielfeld)
+        , Html.button [ Events.onClick SucheLoesung ] [ Html.text "Löse" ]
         ]
 
 
@@ -59,34 +63,40 @@ viewRow model zellen =
 viewZelle : Model -> M.Zelle -> Html Msg
 viewZelle model zelle =
     Html.button
-        [ zelleStyle zelle
+        [ zelleStyle model zelle
         , Events.onClick
             (if model.gewonnen then
                 NoOp
              else
-                XorButton zelle.vektor
+                Push zelle
             )
         ]
         []
 
 
-zelleStyle : M.Zelle -> Attribute Msg
-zelleStyle zelle =
+zelleStyle : Model -> M.Zelle -> Attribute Msg
+zelleStyle model zelle =
     Attr.style
-        [ ( "backgroundColor"
-          , if zelle.licht then
-                "green"
-            else
-                "red"
-          )
+        [ ( "backgroundColor", zelleColor model zelle )
         , ( "height", "40px" )
         , ( "width", "40px" )
         ]
 
 
+zelleColor : Model -> M.Zelle -> String
+zelleColor model zelle =
+    if model.loesung |> List.member zelle.koordinate then
+        "blue"
+    else if zelle.licht then
+        "green"
+    else
+        "red"
+
+
 type Msg
-    = XorButton (Vektor Bool)
+    = Push M.Zelle
     | ResetSpielfeld M.Spielfeld
+    | SucheLoesung
     | NoOp
 
 
@@ -95,16 +105,32 @@ update msg model =
         NoOp ->
             ( model, Cmds.none )
 
+        SucheLoesung ->
+            ( { model
+                | loesung =
+                    solve .vektor (M.zellenSpan model.spielfeld) (mapVektor not model.spielfeld.lichter)
+                        |> List.map (\z -> z.koordinate)
+              }
+            , Cmds.none
+            )
+
         ResetSpielfeld sf ->
             ( { model | spielfeld = sf, gewonnen = M.alleTrue sf }
             , Cmds.none
             )
 
-        XorButton v ->
+        Push zelle ->
             let
                 sf =
-                    M.xorSpielfeld model.spielfeld v
+                    M.xorSpielfeld model.spielfeld zelle.vektor
+
+                loesung =
+                    model.loesung |> List.filter (\k -> k /= zelle.koordinate)
             in
-                ( { model | spielfeld = sf, gewonnen = M.alleTrue sf }
+                ( { model
+                    | spielfeld = sf
+                    , gewonnen = M.alleTrue sf
+                    , loesung = loesung
+                  }
                 , Cmds.none
                 )

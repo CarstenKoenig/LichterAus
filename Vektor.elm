@@ -29,6 +29,31 @@ span proj elems =
             |> List.map snd
 
 
+solve : (a -> Vektor Bool) -> List a -> Vektor Bool -> List a
+solve proj span y =
+    let
+        cols =
+            List.map proj span
+
+        mat =
+            fromMatrix (fromColumns cols `concat` fromColumns [ y ])
+
+        echo =
+            intoEcholon mat
+
+        indizes =
+            solveEcholon echo
+    in
+        List.indexedMap (\i a -> ( i, a )) span
+            |> List.filter (\( i, a ) -> Set.member i indizes)
+            |> List.map snd
+
+
+mapVektor : (a -> b) -> Vektor a -> Vektor b
+mapVektor f =
+    List.map f
+
+
 xorVektor : Vektor Bool -> Vektor Bool -> Vektor Bool
 xorVektor xs ys =
     List.map2 xor xs ys
@@ -106,6 +131,36 @@ spanIndizesFromEcholon mat =
             |> Set.fromList
 
 
+solveEcholon : AMatrix -> Set Int
+solveEcholon mat =
+    let
+        last =
+            Maybe.withDefault [] (lastColumn mat)
+
+        relevant =
+            List.map2 (\a b -> ( a, b )) (Array.toList mat) last
+                |> List.filter snd
+                |> List.map fst
+
+        firstNonZero row =
+            Array.toIndexedList row
+                |> List.filter snd
+                |> List.head
+                |> Maybe.map fst
+    in
+        relevant
+            |> List.filterMap firstNonZero
+            |> Set.fromList
+
+
+lastColumn : AMatrix -> Maybe (Vektor Bool)
+lastColumn mat =
+    Array.toList (Array.map Array.toList mat)
+        |> transpose
+        |> List.reverse
+        |> List.head
+
+
 intoEcholon : AMatrix -> AMatrix
 intoEcholon mat =
     List.foldl reduceCol mat [0..colCount mat - 1]
@@ -135,7 +190,7 @@ reduceCol col mat' =
     in
         Array.indexedMap
             (\rowNr row ->
-                if rowNr > col then
+                if rowNr /= col then
                     xorPivot row
                 else
                     row

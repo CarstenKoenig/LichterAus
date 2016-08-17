@@ -57,8 +57,7 @@ xorSpielfeld spielfeld v =
 
 
 type alias Zelle =
-    { x : Int
-    , y : Int
+    { koordinate : Koordinate
     , licht : Bool
     , vektor : Vektor Bool
     }
@@ -68,7 +67,7 @@ rows : Spielfeld -> List (List Zelle)
 rows spielfeld =
     let
         zelle y x l =
-            Zelle x y l (rectVektor spielfeld x y)
+            Zelle (Koordinate x y) l (rectVektor spielfeld x y)
 
         genRows y ls =
             case ls of
