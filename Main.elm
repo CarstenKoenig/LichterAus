@@ -28,8 +28,8 @@ main =
 
 
 initialModel =
-    ( Model (M.leeresSpielfeld 8 5) False []
-    , Rnd.generate ResetSpielfeld (M.randomSpielfeld 8 5 10)
+    ( Model (M.leeresSpielfeld 9 9) False []
+    , Rnd.generate ResetSpielfeld (M.randomSpielfeld 9 9 30)
     )
 
 
@@ -78,8 +78,8 @@ zelleStyle : Model -> M.Zelle -> Attribute Msg
 zelleStyle model zelle =
     Attr.style
         [ ( "backgroundColor", zelleColor model zelle )
-        , ( "height", "40px" )
-        , ( "width", "40px" )
+        , ( "height", "45px" )
+        , ( "width", "45px" )
         ]
 
 
