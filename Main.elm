@@ -12,7 +12,9 @@ import Platform.Cmd as Cmds
 
 
 type alias Model =
-    { spielfeld : M.Spielfeld }
+    { spielfeld : M.Spielfeld
+    , gewonnen : Bool
+    }
 
 
 main =
@@ -25,31 +27,45 @@ main =
 
 
 initialModel =
-    ( Model (M.leeresSpielfeld 8 5), Rnd.generate ResetSpielfeld (M.randomSpielfeld 8 5 10) )
+    ( Model (M.leeresSpielfeld 8 5) False, Rnd.generate ResetSpielfeld (M.randomSpielfeld 8 5 10) )
 
 
 view model =
     Html.div []
-        [ viewRows (M.rows model.spielfeld) ]
+        [ Html.h2 []
+            [ Html.text
+                (if model.gewonnen then
+                    "GEWONNEN"
+                 else
+                    ""
+                )
+            ]
+        , viewRows model (M.rows model.spielfeld)
+        ]
 
 
-viewRows : List (List M.Zelle) -> Html Msg
-viewRows rows =
+viewRows : Model -> List (List M.Zelle) -> Html Msg
+viewRows model rows =
     Html.table []
-        (List.map viewRow rows)
+        (List.map (viewRow model) rows)
 
 
-viewRow : List M.Zelle -> Html Msg
-viewRow zellen =
+viewRow : Model -> List M.Zelle -> Html Msg
+viewRow model zellen =
     Html.tr []
-        (List.map viewZelle zellen)
+        (List.map (viewZelle model) zellen)
 
 
-viewZelle : M.Zelle -> Html Msg
-viewZelle zelle =
+viewZelle : Model -> M.Zelle -> Html Msg
+viewZelle model zelle =
     Html.button
         [ zelleStyle zelle
-        , Events.onClick (XorButton zelle.vektor)
+        , Events.onClick
+            (if model.gewonnen then
+                NoOp
+             else
+                XorButton zelle.vektor
+            )
         ]
         []
 
@@ -71,16 +87,24 @@ zelleStyle zelle =
 type Msg
     = XorButton (Vektor Bool)
     | ResetSpielfeld M.Spielfeld
+    | NoOp
 
 
 update msg model =
     case msg of
+        NoOp ->
+            ( model, Cmds.none )
+
         ResetSpielfeld sf ->
-            ( { model | spielfeld = sf }
+            ( { model | spielfeld = sf, gewonnen = M.alleTrue sf }
             , Cmds.none
             )
 
         XorButton v ->
-            ( { model | spielfeld = M.xorSpielfeld model.spielfeld v }
-            , Cmds.none
-            )
+            let
+                sf =
+                    M.xorSpielfeld model.spielfeld v
+            in
+                ( { model | spielfeld = sf, gewonnen = M.alleTrue sf }
+                , Cmds.none
+                )

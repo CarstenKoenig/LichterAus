@@ -14,6 +14,11 @@ type alias Spielfeld =
     }
 
 
+alleTrue : Spielfeld -> Bool
+alleTrue spielfeld =
+    List.all identity spielfeld.lichter
+
+
 leeresSpielfeld : Int -> Int -> Spielfeld
 leeresSpielfeld x y =
     { dimX = x
