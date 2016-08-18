@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Lichter Aus</title>
+    <style>
+      html,head,body {
+      padding:0; margin:0;
+      }
+      body {
+      font-family: calibri, helvetica, arial, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="elmApp"></div>
+    <script src="game.js"></script>
+    <script>
+      var node = document.getElementById('elmApp');
+      var app = Elm.Main.embed(node);
+    </script>      
+  </body>
+</html>
+    

@@ -104,7 +104,7 @@ view model =
 
 
 generiereNeuesSpiel =
-    Rnd.generate ResetSpielfeld (zufaelligesSpielfeld 5 5 10)
+    Rnd.generate ResetSpielfeld (zufaelligesSpielfeld 9 9 25)
 
 
 viewRows : Model -> List (List Zelle) -> Html Msg
