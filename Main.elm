@@ -19,6 +19,8 @@ type alias Model =
     , isSolvable : Bool
     }
 
+dimension : Int
+dimension = 9
 
 main =
     program
@@ -30,7 +32,7 @@ main =
 
 
 initialModel =
-    ( Model (solvedGameBoard 9 9) False [] False True
+    ( Model (solvedGameBoard 0 0) False [] False True
     , generateNewGame
     )
 
@@ -147,7 +149,7 @@ view model =
 
 
 generateNewGame =
-    Rnd.generate ResetGameBoard (randomGameBoard 9 9 25)
+    Rnd.generate ResetGameBoard (randomGameBoard dimension dimension 25)
 
 
 viewRows : Model -> List (List Cell) -> Html Msg

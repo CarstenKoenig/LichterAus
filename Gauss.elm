@@ -93,6 +93,9 @@ colCount mat =
         Nothing ->
             0
 
+rowCount : AMatrix -> Int
+rowCount mat = Array.length mat
+
 
 fromMatrix : Matrix Bool -> AMatrix
 fromMatrix mat =
@@ -145,7 +148,7 @@ lastColumn mat =
 
 intoEcholon : AMatrix -> AMatrix
 intoEcholon mat =
-    List.foldl reduceCol mat [0..colCount mat - 1]
+    List.foldl reduceCol mat [0..rowCount mat - 1]
 
 
 reduceCol : Int -> AMatrix -> AMatrix
