@@ -1,13 +1,13 @@
 # LichterAus
-das ["LightsOut"](http://puzzles.wikia.com/wiki/Lights_Out) Puzzle in Elm
+["LightsOut"](http://puzzles.wikia.com/wiki/Lights_Out) Puzzle in Elm
 
 ![Demo Gif](./LichtAus.gif)
 
-Hier geht es zur [Online-Demo](https://carstenkoenig.github.io/LichterAus/)
+[Online-Demo](https://carstenkoenig.github.io/LichterAus/)
 
-## Lösungsalgorithmus
+## Algorithm
 
-Benutzt eine vereinfachte Form des [Gaußschen Eliminationsverfahrens](https://de.wikipedia.org/wiki/Gau%C3%9Fsches_Eliminationsverfahren)
-um einen Spiel-Zustand zu lösen.
+Uses a simple form of the [Gaussian elimination](https://en.wikipedia.org/wiki/Gaussian_elimination)
+to solve a given board
 
-siehe [Details auf Wolfram MathWorld](http://mathworld.wolfram.com/LightsOutPuzzle.html)
+see also [Wolfram MathWorld](http://mathworld.wolfram.com/LightsOutPuzzle.html)
