@@ -1,18 +1,18 @@
 module Matrix exposing (..)
 
-{-| Matrixdarstellung als Liste von Zeilen-Vektoren
-und einige Operationen darauf
+{-| represents a matrix as a list of it's rows
+each row in turn is just a vector
 
-# Definition
+# definition
 @docs Matrix
 
-# Erzeugung
+# generation
 @docs fromColumns
 
-# Eigenschaften
+# properties
 @docs rowCount, columnCount
 
-# Operationen
+# operations
 @docs transpose, concat
 
 -}
@@ -20,25 +20,25 @@ und einige Operationen darauf
 import Array exposing (Array)
 import List
 import Set exposing (Set)
-import Vektor exposing (..)
+import Vector exposing (..)
 
 
-{-| Matrix als Liste von Zeilenvektoren
+{-| a matrix is a list of row-vectors
 -}
 type alias Matrix a =
-    List (Vektor a)
+    List (Vector a)
 
 
-{-| erzeugt eine Matrix aus Spaltenvektoren
+{-| generates a matrix from a list of column-vectors
 
     fromColumns [[1,2],[3,4]] == [[1,3],[2,4]]
 -}
-fromColumns : List (Vektor a) -> Matrix a
+fromColumns : List (Vector a) -> Matrix a
 fromColumns =
     transpose
 
 
-{-| Wieviele Zeilen hat die Matrix
+{-| returns the number of rows of the given matrix
 
     rowCount [[1,2,3],[4,5,6]] == 2
 -}
@@ -47,7 +47,7 @@ rowCount =
     List.length
 
 
-{-| Wieviele Spalten hat die Matrix
+{-| returns the number of columns of the given matrix
 
    rowCount [[1,2,3],[4,5,6]] == 3
 -}
@@ -61,8 +61,8 @@ columnCount rows =
             List.length xs
 
 
-{-| transponiert eine Matrix, d.h.
-die Einträge werden an der Hauptdiagonalen "gespiegelt"
+{-| calculates the transpose of a Matrix
+by reflecting the entries on the main diagonal
 
    transpose [[1,2,3],[4,5,6]] == [[1,4],[2,5],[3,6]]
 
@@ -87,7 +87,7 @@ transpose mat =
         trans mat
 
 
-{-| hängt eine Matrix rechts an eine andere an
+{-| appends the second matrix to the right of first
 
    concat [[1,2],[3,4]] [[5],[6]] == [[1,2,5],[3,4,6]]
 

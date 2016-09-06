@@ -1,10 +1,10 @@
 module Gauss exposing (span, solve)
 
-{-| Gauss ist eine sehr vereinfachte Implementation des Gausschen Eliminationsverfahrens
-(siehe https://de.wikipedia.org/wiki/Gau%C3%9Fsches_Eliminationsverfahren) und verwander
-Themen für Bool-Vektoren (~ Vektorräumme über F^2)
+{-| very simple implementation of the Gaussian elimination
+(see https://en.wikipedia.org/wiki/Gaussian_elimination)
+just for vectors over F² (boolean vectors)
 
-# Methoden
+# methods
 @docs span, solve
 
 -}
@@ -13,18 +13,20 @@ import Array exposing (Array)
 import List
 import Matrix exposing (..)
 import Set exposing (Set)
-import Vektor exposing (..)
+import Vector exposing (..)
 
 
-{-| Berechnet die maximal linear unabhängige Teilliste einer
-Liste von Bool-Vektor-beinhaltenden Objekten.
+{-| given a list of some items you can extract boolean vectors from 
+this will calculates a maximal sublist of "linearly indepentend" items:
 
-Dabei wird proj verwendet um Bool-Vektoren aus den Daten
-zu erhalten.
+    map proj (span proj items) 
 
-    span .vektor zellen
+will be a maximal linearly indepentend sublist of
+
+    map proj items
+
 -}
-span : (a -> Vektor Bool) -> List a -> List a
+span : (a -> Vector Bool) -> List a -> List a
 span proj elems =
     let
         vs =
@@ -44,18 +46,16 @@ span proj elems =
             |> List.map snd
 
 
-{-| Löst eine lineare Gleichung basierend auf einer Liste
-von Bool-Vektor-beinhaltenden Objekten span und y.
-
-Wenn vs die Vektoren (vs = map proj span) sind und
+{-| given a list of some items you can extract boolean vectors from (using proj)
+this will try to calculate a solution
 
     xs = solve proj span y
 
-dann soll gelten
+from a "spanning" list of items span, such that
 
     sum (map proj xs) = y
 -}
-solve : (a -> Vektor Bool) -> List a -> Vektor Bool -> List a
+solve : (a -> Vector Bool) -> List a -> Vector Bool -> List a
 solve proj span y =
     let
         cols =
@@ -77,7 +77,7 @@ solve proj span y =
 
 
 --------------------------------------------------------------------------------
--- vereinfachter Gauss-Algorithmus
+-- simplified gaussian elimination algorithm
 
 
 type alias AMatrix =
@@ -135,7 +135,7 @@ solveEcholon mat =
             |> Set.fromList
 
 
-lastColumn : AMatrix -> Maybe (Vektor Bool)
+lastColumn : AMatrix -> Maybe (Vector Bool)
 lastColumn mat =
     Array.toList (Array.map Array.toList mat)
         |> transpose
@@ -182,7 +182,7 @@ reduceCol col mat' =
 
 pivotUp : Int -> AMatrix -> AMatrix
 pivotUp col mat =
-    case findePivot col mat of
+    case findPivot col mat of
         Nothing ->
             mat
 
@@ -193,8 +193,8 @@ pivotUp col mat =
                 swapRows col pivotRow mat
 
 
-findePivot : Int -> AMatrix -> Maybe Int
-findePivot col mat =
+findPivot : Int -> AMatrix -> Maybe Int
+findPivot col mat =
     let
         istPivot row =
             case Array.get col row of
@@ -204,7 +204,7 @@ findePivot col mat =
                 _ ->
                     False
 
-        finde r rows =
+        find r rows =
             case rows of
                 [] ->
                     Nothing
@@ -213,9 +213,9 @@ findePivot col mat =
                     if istPivot row then
                         Just r
                     else
-                        finde (r + 1) rest
+                        find (r + 1) rest
     in
-        finde col (List.drop col (Array.toList mat))
+        find col (List.drop col (Array.toList mat))
 
 
 swapRows : Int -> Int -> AMatrix -> AMatrix

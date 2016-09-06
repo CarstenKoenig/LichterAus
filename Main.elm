@@ -7,14 +7,14 @@ import Html.Events as Events
 import Platform.Cmd as Cmds
 import Platform.Sub as Subs
 import Random as Rnd
-import Spielfeld exposing (..)
-import Vektor exposing (..)
+import GameBoard exposing (..)
+import Vector exposing (..)
 
 
 type alias Model =
-    { spielfeld : Spielfeld
-    , gewonnen : Bool
-    , loesung : List Koordinate
+    { board : GameBoard
+    , isWon : Bool
+    , solution : List Coordinate
     }
 
 
@@ -28,16 +28,16 @@ main =
 
 
 initialModel =
-    ( Model (geloestesSpielfeld 9 9) False []
-    , generiereNeuesSpiel
+    ( Model (solvedGameBoard 9 9) False []
+    , generateNewGame
     )
 
 
 type Msg
-    = Push Zelle
-    | ResetSpielfeld Spielfeld
-    | NeuesSpiel
-    | SucheLoesung
+    = Push Cell
+    | ResetGameBoard GameBoard
+    | NewGame
+    | FindSolution
     | NoOp
 
 
@@ -46,35 +46,35 @@ update msg model =
         NoOp ->
             ( model, Cmds.none )
 
-        NeuesSpiel ->
-            ( model, generiereNeuesSpiel )
+        NewGame ->
+            ( model, generateNewGame )
 
-        SucheLoesung ->
+        FindSolution ->
             ( { model
-                | loesung =
-                    loeseSpielfeld model.spielfeld
-                        |> List.map (\z -> z.koordinate)
+                | solution =
+                    solveGameBoard model.board
+                        |> List.map (\z -> z.coordinate)
               }
             , Cmds.none
             )
 
-        ResetSpielfeld sf ->
-            ( { model | spielfeld = sf, gewonnen = alleLichterAn sf }
+        ResetGameBoard sf ->
+            ( { model | board = sf, isWon = allLightsOn sf }
             , Cmds.none
             )
 
-        Push zelle ->
+        Push cell ->
             let
                 sf =
-                    zelle.gedrückt model.spielfeld
+                    push cell model.board
 
-                loesung =
-                    model.loesung |> List.filter (\k -> k /= zelle.koordinate)
+                solution =
+                    model.solution |> List.filter (\k -> k /= cell.coordinate)
             in
                 ( { model
-                    | spielfeld = sf
-                    , gewonnen = alleLichterAn sf
-                    , loesung = loesung
+                    | board = sf
+                    , isWon = allLightsOn sf
+                    , solution = solution
                   }
                 , Cmds.none
                 )
@@ -84,69 +84,69 @@ view model =
     Html.div []
         [ Html.h2 []
             [ Html.text
-                (if model.gewonnen then
-                    "GEWONNEN"
+                (if model.isWon then
+                    "YOU WON"
                  else
                     ""
                 )
             ]
-        , viewRows model (zeilen model.spielfeld)
+        , viewRows model (rows model.board)
         , Html.div []
-            [ Html.button [ Events.onClick SucheLoesung ] [ Html.text "Löse" ]
-            , Html.button [ Events.onClick NeuesSpiel ] [ Html.text "neu" ]
+            [ Html.button [ Events.onClick FindSolution ] [ Html.text "solve" ]
+            , Html.button [ Events.onClick NewGame ] [ Html.text "new" ]
             ]
         ]
 
 
 
 --------------------------------------------------------------------------------
--- Hilfsfunktionen
+-- helpers
 
 
-generiereNeuesSpiel =
-    Rnd.generate ResetSpielfeld (zufaelligesSpielfeld 9 9 25)
+generateNewGame =
+    Rnd.generate ResetGameBoard (randomGameBoard 9 9 25)
 
 
-viewRows : Model -> List (List Zelle) -> Html Msg
+viewRows : Model -> List (List Cell) -> Html Msg
 viewRows model rows =
     Html.table []
         (List.map (viewRow model) rows)
 
 
-viewRow : Model -> List Zelle -> Html Msg
-viewRow model zellen =
+viewRow : Model -> List Cell -> Html Msg
+viewRow model celln =
     Html.tr []
-        (List.map (viewZelle model) zellen)
+        (List.map (viewCell model) celln)
 
 
-viewZelle : Model -> Zelle -> Html Msg
-viewZelle model zelle =
+viewCell : Model -> Cell -> Html Msg
+viewCell model cell =
     Html.button
-        [ zelleStyle model zelle
+        [ cellStyle model cell
         , Events.onClick
-            (if model.gewonnen then
+            (if model.isWon then
                 NoOp
              else
-                Push zelle
+                Push cell
             )
         ]
         []
 
 
-zelleStyle : Model -> Zelle -> Attribute Msg
-zelleStyle model zelle =
+cellStyle : Model -> Cell -> Attribute Msg
+cellStyle model cell =
     Attr.style
-        [ ( "backgroundColor", zelleColor model zelle )
+        [ ( "backgroundColor", cellColor model cell )
         , ( "height", "45px" )
         , ( "width", "45px" )
         ]
 
 
-zelleColor : Model -> Zelle -> String
-zelleColor model zelle =
-    if model.loesung |> List.member zelle.koordinate then
+cellColor : Model -> Cell -> String
+cellColor model cell =
+    if model.solution |> List.member cell.coordinate then
         "blue"
-    else if zelle.licht then
+    else if cell.light then
         "green"
     else
         "red"
