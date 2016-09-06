@@ -3,7 +3,7 @@ module GameBoard
         ( GameBoard
         , Cell
         , Coordinate
-        , push, toggle
+        , push, toggle, clearBoard
         , solvedGameBoard
         , randomGameBoard
         , allLightsOn
@@ -24,7 +24,7 @@ and some operations on it
 @docs allLightsOn, rows
 
 # operations
-@docs solveGameBoard, push, toggle
+@docs solveGameBoard, push, toggle, clearBoard
 
 -}
 
@@ -91,6 +91,11 @@ solvedGameBoard x y =
     , lights = List.repeat (x * y) True
     }
 
+{-| clears the board: turns off all lights
+-}
+clearBoard : GameBoard -> GameBoard
+clearBoard board =
+    { board | lights = List.repeat (board.dimX * board.dimY) True }
 
 {-| generates a gameboard of the given size with
 about n randomly pressed cells
@@ -194,6 +199,7 @@ xorGameBoard : Vector Bool -> GameBoard -> GameBoard
 xorGameBoard v gameBoard =
     { gameBoard | lights = xorVector gameBoard.lights v }
 
+        
 createVector : GameBoard -> Int -> Int -> ((Int,Int) -> Bool) -> Vector Bool
 createVector gameBoard x y choose =
     coordinats gameBoard

@@ -42,6 +42,7 @@ type Msg
     | NewGame
     | FindSolution
     | ToggleEdit
+    | ClearBoard
     | NoOp
 
 
@@ -57,8 +58,15 @@ update msg model =
                   , isSolvable = not (List.isEmpty <| solveGameBoard model.board)
               }, Cmds.none )
 
+        ClearBoard ->
+            ( { model
+                  | board = clearBoard model.board
+                  , isWon = False
+                  , solution = []
+              }, Cmds.none )
+
         NewGame ->
-            ( model, generateNewGame )
+            ( { model | solution = [] }, generateNewGame )
 
         FindSolution ->
             let solution =
@@ -123,7 +131,8 @@ view model =
         , viewRows model (rows model.board)
         , Html.div []
             (if model.isEditing then
-                 [ Html.button [ Events.onClick ToggleEdit ] [ Html.text "done" ] ]
+                 [ Html.button [ Events.onClick ToggleEdit ] [ Html.text "done" ]
+                 , Html.button [ Events.onClick ClearBoard ] [ Html.text "clear" ] ]
             else 
                 [ Html.button [ Events.onClick FindSolution ] [ Html.text "solve" ]
                 , Html.button [ Events.onClick NewGame ] [ Html.text "new" ]
