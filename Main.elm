@@ -15,6 +15,8 @@ type alias Model =
     { board : GameBoard
     , isWon : Bool
     , solution : List Coordinate
+    , isEditing : Bool
+    , isSolvable : Bool
     }
 
 
@@ -28,16 +30,18 @@ main =
 
 
 initialModel =
-    ( Model (solvedGameBoard 9 9) False []
+    ( Model (solvedGameBoard 9 9) False [] False True
     , generateNewGame
     )
 
 
 type Msg
     = Push Cell
+    | Toggle Cell
     | ResetGameBoard GameBoard
     | NewGame
     | FindSolution
+    | ToggleEdit
     | NoOp
 
 
@@ -46,17 +50,24 @@ update msg model =
         NoOp ->
             ( model, Cmds.none )
 
+        ToggleEdit ->
+            ( { model
+                  | isEditing = not model.isEditing
+                  , solution = []
+                  , isSolvable = not (List.isEmpty <| solveGameBoard model.board)
+              }, Cmds.none )
+
         NewGame ->
             ( model, generateNewGame )
 
         FindSolution ->
-            ( { model
-                | solution =
+            let solution =
                     solveGameBoard model.board
                         |> List.map (\z -> z.coordinate)
-              }
-            , Cmds.none
-            )
+            in 
+                ( { model
+                      | solution = solution
+                  }, Cmds.none )
 
         ResetGameBoard sf ->
             ( { model | board = sf, isWon = allLightsOn sf }
@@ -79,22 +90,45 @@ update msg model =
                 , Cmds.none
                 )
 
+        Toggle cell ->
+            let
+                sf =
+                    toggle cell model.board
+
+            in
+                ( { model
+                    | board = sf
+                    , isWon = allLightsOn sf
+                  }
+                , Cmds.none
+                )
+
 
 view model =
     Html.div []
         [ Html.h2 []
             [ Html.text
-                (if model.isWon then
+                (if model.isWon && not model.isEditing then
                     "YOU WON"
                  else
                     ""
                 )
+            , Html.text
+                (if not model.isSolvable && not model.isEditing then
+                     "UNSOLVABLE"
+                 else
+                     ""
+                )
             ]
         , viewRows model (rows model.board)
         , Html.div []
-            [ Html.button [ Events.onClick FindSolution ] [ Html.text "solve" ]
-            , Html.button [ Events.onClick NewGame ] [ Html.text "new" ]
-            ]
+            (if model.isEditing then
+                 [ Html.button [ Events.onClick ToggleEdit ] [ Html.text "done" ] ]
+            else 
+                [ Html.button [ Events.onClick FindSolution ] [ Html.text "solve" ]
+                , Html.button [ Events.onClick NewGame ] [ Html.text "new" ]
+                , Html.button [ Events.onClick ToggleEdit ] [ Html.text "edit" ]
+                ])
         ]
 
 
@@ -124,8 +158,10 @@ viewCell model cell =
     Html.button
         [ cellStyle model cell
         , Events.onClick
-            (if model.isWon then
+            (if model.isWon && not model.isEditing then
                 NoOp
+             else if model.isEditing then
+                Toggle cell
              else
                 Push cell
             )

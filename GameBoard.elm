@@ -3,7 +3,7 @@ module GameBoard
         ( GameBoard
         , Cell
         , Coordinate
-        , push
+        , push, toggle
         , solvedGameBoard
         , randomGameBoard
         , allLightsOn
@@ -18,13 +18,13 @@ and some operations on it
 @docs GameBoard, Cell, Coordinate
 
 # initialisation
-@docs leeresGameBoard, randomGameBoard
+@docs solvedGameBoard, randomGameBoard
 
 # properties
-@docs alleLichterAn, rows
+@docs allLightsOn, rows
 
 # operations
-@docs solveGameBoard
+@docs solveGameBoard, push, toggle
 
 -}
 
@@ -61,7 +61,8 @@ itself
 type alias Cell =
     { coordinate : Coordinate
     , light : Bool
-    , vector : Vector Bool
+    , vectorPush : Vector Bool
+    , vectorToggle : Vector Bool
     }
 
 {-| the coordinate y=row, x=column 
@@ -74,8 +75,13 @@ type alias Coordinate =
 {-| "push" a cell on a board, calculating a new board
 -}
 push : Cell -> GameBoard -> GameBoard
-push cell = xorGameBoard cell.vector
+push cell = xorGameBoard cell.vectorPush
         
+{-| toggles the state of a cell on a board, calculating a new board
+-}
+toggle : Cell -> GameBoard -> GameBoard
+toggle cell = xorGameBoard cell.vectorToggle
+
 {-| initializes a board with all lights on
 -}
 solvedGameBoard : Int -> Int -> GameBoard
@@ -98,7 +104,7 @@ randomGameBoard x y n =
         randomCells empty n
             |> Rnd.map
                 (List.foldl
-                    (\z -> xorGameBoard z.vector)
+                    (\z -> xorGameBoard z.vectorPush )
                     empty
                 )
 
@@ -124,11 +130,7 @@ rows : GameBoard -> List (List Cell)
 rows board =
     let
         cell y x l =
-            let
-                vector =
-                    cellVector board x y
-            in
-                Cell (Coordinate x y) l vector
+            Cell (Coordinate x y) l (neighbourhoodVector board x y) (coordVector board x y)
 
         genRows y ls =
             case ls of
@@ -158,7 +160,7 @@ to turn on all lights on the gameboard
 -}
 solveGameBoard : GameBoard -> List Cell
 solveGameBoard board =
-    solve .vector (cellSpan board) (mapVector not board.lights)
+    solve .vectorPush (cellSpan board) (mapVector not board.lights)
 
 
 
@@ -183,7 +185,7 @@ cellSpan gameBoard =
             List.concat (rows gameBoard)
 
         proj =
-            .vector
+            .vectorPush
     in
         span proj elems
 
@@ -192,18 +194,29 @@ xorGameBoard : Vector Bool -> GameBoard -> GameBoard
 xorGameBoard v gameBoard =
     { gameBoard | lights = xorVector gameBoard.lights v }
 
+createVector : GameBoard -> Int -> Int -> ((Int,Int) -> Bool) -> Vector Bool
+createVector gameBoard x y choose =
+    coordinats gameBoard
+        |> List.map (\{ x, y } -> choose ( x, y ))
 
-cellVector : GameBoard -> Int -> Int -> Vector Bool
-cellVector gameBoard x y =
+
+        
+
+neighbourhoodVector : GameBoard -> Int -> Int -> Vector Bool
+neighbourhoodVector gameBoard x y =
     let
         inNeighbourhood ( x', y' ) =
             abs (x' - x) + abs (y' - y) <= 1
+    in createVector gameBoard x y inNeighbourhood
 
-        bs =
-            coordinats gameBoard
-                |> List.map (\{ x, y } -> inNeighbourhood ( x, y ))
-    in
-        bs
+
+coordVector : GameBoard -> Int -> Int -> Vector Bool
+coordVector gameBoard x y =
+    let
+        atCoord ( x', y' ) =
+            x == x' && y == y'
+
+    in createVector gameBoard x y atCoord
 
 
 coordinats : GameBoard -> List Coordinate
